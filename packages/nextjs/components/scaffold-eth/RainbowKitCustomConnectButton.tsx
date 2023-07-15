@@ -3,14 +3,16 @@ import { useDisconnect, useSwitchNetwork } from "wagmi";
 import { ArrowLeftOnRectangleIcon, ArrowsRightLeftIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Balance, BlockieAvatar } from "~~/components/scaffold-eth";
 import { useNetworkColor } from "~~/hooks/scaffold-eth";
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import { enabledChains } from "~~/services/web3/wagmiConnectors";
+
+// import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 /**
  * Custom Wagmi Connect Button (watch balance + custom design)
  */
 export const RainbowKitCustomConnectButton = () => {
   const networkColor = useNetworkColor();
-  const configuredNetwork = getTargetNetwork();
+  // const configuredNetwork = getTargetNetwork();
   const { disconnect } = useDisconnect();
   const { switchNetwork } = useSwitchNetwork();
 
@@ -30,7 +32,7 @@ export const RainbowKitCustomConnectButton = () => {
                 );
               }
 
-              if (chain.unsupported || chain.id !== configuredNetwork.id) {
+              if (chain.unsupported) {
                 return (
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-error btn-sm dropdown-toggle">
@@ -38,18 +40,16 @@ export const RainbowKitCustomConnectButton = () => {
                       <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
                     </label>
                     <ul tabIndex={0} className="dropdown-content menu p-2 mt-1 shadow-lg bg-base-100 rounded-box">
-                      <li>
-                        <button
-                          className="menu-item"
-                          type="button"
-                          onClick={() => switchNetwork?.(configuredNetwork.id)}
-                        >
-                          <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
-                          <span className="whitespace-nowrap">
-                            Switch to <span style={{ color: networkColor }}>{configuredNetwork.name}</span>
-                          </span>
-                        </button>
-                      </li>
+                      {enabledChains.map(chain => (
+                        <li key={chain.id}>
+                          <button className="menu-item" type="button" onClick={() => switchNetwork?.(chain.id)}>
+                            <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
+                            <span className="whitespace-nowrap">
+                              Switch to <span style={{ color: networkColor }}>{chain.name}</span>
+                            </span>
+                          </button>
+                        </li>
+                      ))}
                       <li>
                         <button className="menu-item text-error" type="button" onClick={() => disconnect()}>
                           <ArrowLeftOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" /> <span>Disconnect</span>

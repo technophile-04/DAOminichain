@@ -1,13 +1,18 @@
+import { useEffect, useState } from "react";
 import type { ExtractAbiFunctionNames } from "abitype";
-import { useContractRead } from "wagmi";
+import { useAccount, useContractRead, useNetwork } from "wagmi";
+import deployedContracts from "~~/generated/deployedContracts";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import { enabledChains } from "~~/services/web3/wagmiConnectors";
 import {
   AbiFunctionReturnType,
   ContractAbi,
   ContractName,
   UseScaffoldReadConfig,
 } from "~~/utils/scaffold-eth/contract";
+
+const defaultChain = enabledChains[0];
+const deployedContractsChainIds = Object.keys(deployedContracts);
 
 /**
  * @dev wrapper for wagmi's useContractRead hook which loads in deployed contract contract abi, address automatically
@@ -26,12 +31,37 @@ export const useScaffoldContractRead = <
   ...readConfig
 }: UseScaffoldReadConfig<TContractName, TFunctionName>) => {
   const { data: deployedContract } = useDeployedContractInfo(contractName);
+  const [actualContract, setActualContract] = useState(deployedContract);
+  const { isConnected } = useAccount();
+  const { chain } = useNetwork();
+
+  useEffect(() => {
+    (async () => {
+      if (isConnected && chain?.id) {
+        const connectedChainId = chain?.id;
+        const chainId = connectedChainId || defaultChain.id;
+
+        if (deployedContractsChainIds.includes(chainId.toString())) {
+          const deployedContract =
+            deployedContracts[chainId as keyof typeof deployedContracts][0].contracts[contractName];
+          // @ts-ignore TODO: fix this
+          setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
+          return;
+        }
+      }
+
+      const deployedContract =
+        deployedContracts[defaultChain.id as keyof typeof deployedContracts][0].contracts[contractName];
+      // @ts-ignore TODO: fix this
+      setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
 
   return useContractRead({
-    chainId: getTargetNetwork().id,
     functionName,
-    address: deployedContract?.address,
-    abi: deployedContract?.abi,
+    address: actualContract?.address,
+    abi: actualContract?.abi,
     watch: true,
     args,
     enabled: !Array.isArray(args) || !args.some(arg => arg === undefined),

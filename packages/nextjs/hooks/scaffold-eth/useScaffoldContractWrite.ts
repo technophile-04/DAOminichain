@@ -4,7 +4,7 @@ import { parseEther } from "viem";
 import { useContractWrite, useNetwork } from "wagmi";
 import { getParsedError } from "~~/components/scaffold-eth";
 import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
-import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
 import { ContractAbi, ContractName, UseScaffoldWriteConfig } from "~~/utils/scaffold-eth/contract";
 
 type UpdatedArgs = Parameters<ReturnType<typeof useContractWrite<Abi, string, undefined>>["writeAsync"]>[0];
@@ -33,10 +33,8 @@ export const useScaffoldContractWrite = <
   const { chain } = useNetwork();
   const writeTx = useTransactor();
   const [isMining, setIsMining] = useState(false);
-  const configuredNetwork = getTargetNetwork();
 
   const wagmiContractWrite = useContractWrite({
-    chainId: configuredNetwork.id,
     address: deployedContractData?.address,
     abi: deployedContractData?.abi as Abi,
     functionName: functionName as any,
@@ -59,10 +57,6 @@ export const useScaffoldContractWrite = <
     }
     if (!chain?.id) {
       notification.error("Please connect your wallet");
-      return;
-    }
-    if (chain?.id !== configuredNetwork.id) {
-      notification.error("You on the wrong network");
       return;
     }
 
