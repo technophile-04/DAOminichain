@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Abi, ExtractAbiFunctionNames } from "abitype";
 import { parseEther } from "viem";
-import { useContractWrite, useNetwork } from "wagmi";
+import { useAccount, useContractWrite, useNetwork } from "wagmi";
 import { getParsedError } from "~~/components/scaffold-eth";
+import deployedContracts from "~~/generated/deployedContracts";
 import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
+import { enabledChains } from "~~/services/web3/wagmiConnectors";
 import { notification } from "~~/utils/scaffold-eth";
 import { ContractAbi, ContractName, UseScaffoldWriteConfig } from "~~/utils/scaffold-eth/contract";
 
 type UpdatedArgs = Parameters<ReturnType<typeof useContractWrite<Abi, string, undefined>>["writeAsync"]>[0];
+
+const defaultChain = enabledChains[0];
+const deployedContractsChainIds = Object.keys(deployedContracts);
 
 /**
  * @dev wrapper for wagmi's useContractWrite hook(with config prepared by usePrepareContractWrite hook) which loads in deployed contract abi and address automatically
@@ -33,10 +38,34 @@ export const useScaffoldContractWrite = <
   const { chain } = useNetwork();
   const writeTx = useTransactor();
   const [isMining, setIsMining] = useState(false);
+  const [actualContract, setActualContract] = useState(deployedContractData);
+  const { isConnected } = useAccount();
 
+  useEffect(() => {
+    (async () => {
+      if (isConnected && chain?.id) {
+        const connectedChainId = chain?.id;
+        const chainId = connectedChainId || defaultChain.id;
+
+        if (deployedContractsChainIds.includes(chainId.toString())) {
+          const deployedContract =
+            deployedContracts[chainId as keyof typeof deployedContracts][0].contracts[contractName];
+          // @ts-ignore TODO: fix this
+          setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
+          return;
+        }
+      }
+
+      const deployedContract =
+        deployedContracts[defaultChain.id as keyof typeof deployedContracts][0].contracts[contractName];
+      // @ts-ignore TODO: fix this
+      setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
   const wagmiContractWrite = useContractWrite({
-    address: deployedContractData?.address,
-    abi: deployedContractData?.abi as Abi,
+    address: actualContract?.address,
+    abi: actualContract?.abi as Abi,
     functionName: functionName as any,
     args: args as unknown[],
     value: value ? parseEther(value) : undefined,
@@ -51,7 +80,7 @@ export const useScaffoldContractWrite = <
     args?: UseScaffoldWriteConfig<TContractName, TFunctionName>["args"];
     value?: UseScaffoldWriteConfig<TContractName, TFunctionName>["value"];
   } & UpdatedArgs = {}) => {
-    if (!deployedContractData) {
+    if (!actualContract) {
       notification.error("Target Contract is not deployed, did you forgot to run `yarn deploy`?");
       return;
     }
