@@ -1,10 +1,21 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Bars3Icon, BugAntIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
+import {
+  ArrowsRightLeftIcon,
+  Bars3Icon,
+  BugAntIcon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
+import { useGlobalState } from "~~/services/store/store";
+import { enabledChains } from "~~/services/web3/wagmiConnectors";
+import { NETWORKS_EXTRA_DATA } from "~~/utils/scaffold-eth";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const router = useRouter();
@@ -29,6 +40,20 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
+  const { setUiChain, uiChain } = useGlobalState();
+  const { isConnected } = useAccount();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
+
+  useEffect(() => {
+    (async () => {
+      if (isConnected && chain?.id) {
+        setUiChain(chain);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, chain?.id]);
+
   useOutsideClick(
     burgerMenuRef,
     useCallback(() => setIsDrawerOpen(false), []),
@@ -96,7 +121,35 @@ export const Header = () => {
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">{navLinks}</ul>
       </div>
-      <div className="navbar-end flex-grow mr-4">
+      <div className="navbar-end flex-grow mr-4 space-x-4">
+        {/*Network switch button*/}
+        <div className="dropdown dropdown-end">
+          <label tabIndex={0} className="btn btn-success btn-sm dropdown-toggle">
+            <span>{uiChain.name}</span>
+            <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
+          </label>
+          <ul tabIndex={0} className="dropdown-content menu p-2 mt-1 shadow-lg bg-base-100 rounded-box">
+            {enabledChains.map(chain => (
+              <li key={chain.id}>
+                <button
+                  className="menu-item"
+                  type="button"
+                  onClick={() => {
+                    setUiChain(chain);
+                    if (isConnected) {
+                      switchNetwork?.(chain.id);
+                    }
+                  }}
+                >
+                  <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
+                  <span className="whitespace-nowrap">
+                    Switch to <span style={{ color: NETWORKS_EXTRA_DATA[chain.id].color }}>{chain.name}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
         <RainbowKitCustomConnectButton />
         <FaucetButton />
       </div>

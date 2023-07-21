@@ -1,3 +1,4 @@
+import * as chains from "wagmi/chains";
 import create from "zustand";
 
 /**
@@ -10,11 +11,15 @@ import create from "zustand";
  */
 
 type TGlobalState = {
+  uiChain: chains.Chain;
   nativeCurrencyPrice: number;
   setNativeCurrencyPrice: (newNativeCurrencyPriceState: number) => void;
+  setUiChain: (newUiChain: chains.Chain) => void;
 };
 
 export const useGlobalState = create<TGlobalState>(set => ({
   nativeCurrencyPrice: 0,
   setNativeCurrencyPrice: (newValue: number): void => set(() => ({ nativeCurrencyPrice: newValue })),
+  uiChain: chains.sepolia,
+  setUiChain: (newValue: chains.Chain): void => set(() => ({ uiChain: newValue })),
 }));

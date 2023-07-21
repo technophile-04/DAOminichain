@@ -12,7 +12,6 @@ import { enabledChains } from "~~/services/web3/wagmiConnectors";
  */
 export const RainbowKitCustomConnectButton = () => {
   const networkColor = useNetworkColor();
-  // const configuredNetwork = getTargetNetwork();
   const { disconnect } = useDisconnect();
   const { switchNetwork } = useSwitchNetwork();
 

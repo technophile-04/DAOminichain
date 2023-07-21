@@ -5,6 +5,7 @@ import { useAccount, useContractWrite, useNetwork } from "wagmi";
 import { getParsedError } from "~~/components/scaffold-eth";
 import deployedContracts from "~~/generated/deployedContracts";
 import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
+import { useGlobalState } from "~~/services/store/store";
 import { enabledChains } from "~~/services/web3/wagmiConnectors";
 import { notification } from "~~/utils/scaffold-eth";
 import { ContractAbi, ContractName, UseScaffoldWriteConfig } from "~~/utils/scaffold-eth/contract";
@@ -40,6 +41,7 @@ export const useScaffoldContractWrite = <
   const [isMining, setIsMining] = useState(false);
   const [actualContract, setActualContract] = useState(deployedContractData);
   const { isConnected } = useAccount();
+  const { uiChain } = useGlobalState();
 
   useEffect(() => {
     (async () => {
@@ -57,15 +59,17 @@ export const useScaffoldContractWrite = <
       }
 
       const deployedContract =
-        deployedContracts[defaultChain.id as keyof typeof deployedContracts][0].contracts[contractName];
+        deployedContracts[uiChain.id as keyof typeof deployedContracts][0].contracts[contractName];
       // @ts-ignore TODO: fix this
       setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [isConnected, uiChain.id]);
+
   const wagmiContractWrite = useContractWrite({
     address: actualContract?.address,
     abi: actualContract?.abi as Abi,
+    chainId: uiChain.id,
     functionName: functionName as any,
     args: args as unknown[],
     value: value ? parseEther(value) : undefined,

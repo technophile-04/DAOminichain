@@ -3,6 +3,7 @@ import type { ExtractAbiFunctionNames } from "abitype";
 import { useAccount, useContractRead, useNetwork } from "wagmi";
 import deployedContracts from "~~/generated/deployedContracts";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
+import { useGlobalState } from "~~/services/store/store";
 import { enabledChains } from "~~/services/web3/wagmiConnectors";
 import {
   AbiFunctionReturnType,
@@ -34,6 +35,7 @@ export const useScaffoldContractRead = <
   const [actualContract, setActualContract] = useState(deployedContract);
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
+  const { uiChain } = useGlobalState();
 
   useEffect(() => {
     (async () => {
@@ -51,17 +53,18 @@ export const useScaffoldContractRead = <
       }
 
       const deployedContract =
-        deployedContracts[defaultChain.id as keyof typeof deployedContracts][0].contracts[contractName];
+        deployedContracts[uiChain.id as keyof typeof deployedContracts][0].contracts[contractName];
       // @ts-ignore TODO: fix this
       setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [isConnected, uiChain.id]);
 
   return useContractRead({
     functionName,
     address: actualContract?.address,
     abi: actualContract?.abi,
+    chainId: uiChain.id,
     watch: true,
     args,
     enabled: !Array.isArray(args) || !args.some(arg => arg === undefined),
