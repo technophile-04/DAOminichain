@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { ArrowsRightLeftIcon, Bars3Icon, BugAntIcon, ChevronDownIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { QueueListIcon } from "@heroicons/react/24/solid";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
@@ -67,6 +68,12 @@ export const Header = () => {
         <NavLink href="/propose">
           <SparklesIcon className="h-4 w-4" />
           Create Proposal
+        </NavLink>
+      </li>
+      <li>
+        <NavLink href="/proposalsList">
+          <QueueListIcon className="h-4 w-4" />
+          All Proposals
         </NavLink>
       </li>
       {/* <li> */}
