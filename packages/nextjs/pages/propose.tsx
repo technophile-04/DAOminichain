@@ -1,17 +1,25 @@
 import { useState } from "react";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
+import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 const Propose: NextPage = () => {
+  const { writeAsync: proposeTxn } = useScaffoldContractWrite({
+    contractName: "FootyDAO",
+    functionName: "propose",
+    args: [["0x0000c9eC4042283e8139c74F4c64BcD1E0b9B54f"], [0n], ["0x"], "test proposal"],
+  });
+
   const [formState, setFormState] = useState({
     proposeID: "",
     title: "",
     description: "",
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle form submission here
+    await proposeTxn();
     console.log(formState);
   };
   return (

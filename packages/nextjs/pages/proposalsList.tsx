@@ -1,27 +1,52 @@
+import { useEffect, useState } from "react";
+import { readContract } from "@wagmi/core";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
+import { Spinner } from "~~/components/Spinner";
+import { Address } from "~~/components/scaffold-eth";
+import { useScaffoldContract, useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
 
-const proposals = [
-  {
-    id: "1",
-    title: "Proposal 1",
-    description:
-      "Proposals should be fully-formed ideas that have exited the brainstorming phase and are ready for the community to evaluate. An example of a proposal would be “Create a Treasury management core team” or “Develop a new onboarding process for new members.” Proposals typically have a funding request, meaning they’re pulling funds from the DAO’s treasury. However, some DAOs have categories for proposals that don’t include a funding ask. These non-funded proposals might include changes to things such as the governance structure, the DeFi protocol the DAO is maintaining, or elements of the DAO that don’t require funding a team to implement.",
-  },
-  {
-    id: "2",
-    title: "Proposal 2",
-    description:
-      "Proposals should be fully-formed ideas that have exited the brainstorming phase and are ready for the community to evaluate. An example of a proposal would be “Create a Treasury management core team” or “Develop a new onboarding process for new members.” Proposals typically have a funding request, meaning they’re pulling funds from the DAO’s treasury. However, some DAOs have categories for proposals that don’t include a funding ask. These non-funded proposals might include changes to things such as the governance structure, the DeFi protocol the DAO is maintaining, or elements of the DAO that don’t require funding a team to implement.",
-  },
-  {
-    id: "3",
-    title: "Proposal 3",
-    description:
-      "Proposals should be fully-formed ideas that have exited the brainstorming phase and are ready for the community to evaluate. An example of a proposal would be “Create a Treasury management core team” or “Develop a new onboarding process for new members.” Proposals typically have a funding request, meaning they’re pulling funds from the DAO’s treasury. However, some DAOs have categories for proposals that don’t include a funding ask. These non-funded proposals might include changes to things such as the governance structure, the DeFi protocol the DAO is maintaining, or elements of the DAO that don’t require funding a team to implement.",
-  },
-];
 const ProposalsList: NextPage = () => {
+  const [allParsedProposals, setAllParsedProposals] = useState<any[]>([]);
+
+  const { data: proposalCreatedEvents, isLoading } = useScaffoldEventHistory({
+    contractName: "FootyDAO",
+    eventName: "ProposalCreated",
+    fromBlock: 38193209n,
+  });
+
+  const { data: FootyDAOContract } = useScaffoldContract({ contractName: "FootyDAO" });
+
+  useEffect(() => {
+    (async () => {
+      if (proposalCreatedEvents && FootyDAOContract) {
+        const data = await Promise.all(
+          proposalCreatedEvents.map(async proposal => {
+            const result = await readContract({
+              address: FootyDAOContract.address,
+              abi: FootyDAOContract.abi,
+              functionName: "proposals",
+              args: [proposal.args.proposalId],
+            });
+            return { args: result, description: proposal.args.description };
+          }),
+        );
+        setAllParsedProposals(data);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposalCreatedEvents]);
+
+  console.log("This are all proposals", proposalCreatedEvents);
+
+  if (isLoading) {
+    return (
+      <div className="mt-14 flex items-center justify-center flex-col">
+        <h2 className="text-2xl font-bold mb-4 text-center">Proposals List</h2>
+        <Spinner width="50px" height="50px" />
+      </div>
+    );
+  }
   return (
     <>
       <MetaHeader
@@ -35,11 +60,29 @@ const ProposalsList: NextPage = () => {
       <div className="mt-8 flex flex-col items-center justify-center px-4">
         <h2 className="text-2xl font-bold mb-4 text-center">Proposals List</h2>
         <ul className="space-y-4 w-11/12 md:w-3/4">
-          {proposals.map(proposal => (
-            <li key={proposal.id}>
+          {allParsedProposals?.map(proposal => (
+            <li key={proposal.args[0].toString()}>
               <div className="bg-base-100 p-4 shadow rounded-2xl">
-                <h3 className="text-xl font-bold">{proposal.title}</h3>
+                <h3 className="text-xl font-bold">
+                  <Address address={proposal.args[1]} />
+                </h3>
                 <p className="">{proposal.description}</p>
+                <div className="flex space-x-3">
+                  {/* Show the endBlock */}
+                  <div className="flex flex-col">
+                    <p className="m-0">Abstain Votes</p>
+                    <p className="m-0">{proposal.args[7].toString()}</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="m-0">Against Vote</p>
+                    <p className="m-0">{proposal.args[6].toString()}</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="m-0">For Votes</p>
+                    <p className="m-0">{proposal.args[5].toString()}</p>
+                  </div>
+                </div>
+                <button className="btn btn-primary mt-2 btn-sm">Vote</button>
               </div>
             </li>
           ))}

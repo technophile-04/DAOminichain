@@ -14,6 +14,8 @@ const Debug: NextPage = () => {
     contractNames[0],
   );
 
+  console.log("ContractName", contractNames);
+
   return (
     <>
       <MetaHeader
