@@ -44,10 +44,9 @@ export const Header = () => {
   const { data: footyTokenBalance } = useBalance({
     address: connectedAddress,
     token: "0xAb1cE3C12a85B7FA613DE482bfD3a731E7B8C28e",
+    chainId: 80001,
     watch: true,
   });
-
-  console.log("FootyTokenBalance", footyTokenBalance);
 
   useEffect(() => {
     (async () => {

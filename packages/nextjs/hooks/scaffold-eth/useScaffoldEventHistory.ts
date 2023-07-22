@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Abi, AbiEvent, ExtractAbiEventNames } from "abitype";
 import { Hash } from "viem";
 import { usePublicClient } from "wagmi";
-import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
+import deployedContracts from "~~/generated/deployedContracts";
 import { replacer } from "~~/utils/scaffold-eth/common";
 import { ContractAbi, ContractName, UseScaffoldEventHistoryConfig } from "~~/utils/scaffold-eth/contract";
 
@@ -32,7 +32,9 @@ export const useScaffoldEventHistory = <
   const [events, setEvents] = useState<any[]>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(contractName);
+  // const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(contractName);
+  const deployedContractData = deployedContracts[80001][0].contracts.FootyDAO;
+  const deployedContractLoading = false;
   const publicClient = usePublicClient();
 
   useEffect(() => {

@@ -1,18 +1,41 @@
 import { useEffect, useState } from "react";
 import { readContract } from "@wagmi/core";
 import type { NextPage } from "next";
+import { parseEther } from "viem";
+import { useContractWrite } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { Spinner } from "~~/components/Spinner";
-import { Address } from "~~/components/scaffold-eth";
-import { useScaffoldContract, useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
+import { Address, getParsedError } from "~~/components/scaffold-eth";
+import deployedContracts from "~~/generated/deployedContracts";
+import { useScaffoldContract, useScaffoldEventHistory, useTransactor } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
+
+const AMOUNT = parseEther("3");
 
 const ProposalsList: NextPage = () => {
   const [allParsedProposals, setAllParsedProposals] = useState<any[]>([]);
 
+  const writeTx = useTransactor();
   const { data: proposalCreatedEvents, isLoading } = useScaffoldEventHistory({
     contractName: "FootyDAO",
     eventName: "ProposalCreated",
     fromBlock: 38193209n,
+  });
+
+  const { writeAsync: approveZeta } = useContractWrite({
+    address: deployedContracts[5][0].contracts.ZetaToken.address,
+    abi: deployedContracts[5][0].contracts.ZetaToken.abi,
+    functionName: "approve",
+    args: [deployedContracts[5][0].contracts.FootyDAO.address, AMOUNT],
+    chainId: 5,
+  });
+
+  const { writeAsync: castVote } = useContractWrite({
+    address: deployedContracts[5][0].contracts.FootyDAO.address,
+    abi: deployedContracts[5][0].contracts.FootyDAO.abi,
+    functionName: "castVote",
+    args: [0n, 1],
+    value: 0n,
   });
 
   const { data: FootyDAOContract } = useScaffoldContract({ contractName: "FootyDAO" });
@@ -67,22 +90,93 @@ const ProposalsList: NextPage = () => {
                   <Address address={proposal.args[1]} />
                 </h3>
                 <p className="">{proposal.description}</p>
-                <div className="flex space-x-3">
+                <div className="flex space-x-8">
                   {/* Show the endBlock */}
                   <div className="flex flex-col">
                     <p className="m-0">Abstain Votes</p>
-                    <p className="m-0">{proposal.args[7].toString()}</p>
+                    <p className="m-0 self-center">{proposal.args[7].toString()}</p>
+                    <button
+                      className="btn btn-primary mt-2 btn-sm"
+                      onClick={async () => {
+                        if (approveZeta && castVote) {
+                          try {
+                            await writeTx(() => approveZeta());
+                            await writeTx(() =>
+                              castVote({
+                                args: [proposal.args[0], 0],
+                                value: 0n,
+                              }),
+                            );
+                          } catch (e: any) {
+                            const message = getParsedError(e);
+                            notification.error(message);
+                          }
+                        } else {
+                          notification.error("Contract writer error. Try again.");
+                          return;
+                        }
+                      }}
+                    >
+                      Vote
+                    </button>
                   </div>
                   <div className="flex flex-col">
                     <p className="m-0">Against Vote</p>
-                    <p className="m-0">{proposal.args[6].toString()}</p>
+                    <p className="m-0 self-center">{proposal.args[6].toString()}</p>
+                    <button
+                      className="btn btn-primary mt-2 btn-sm"
+                      onClick={async () => {
+                        if (approveZeta && castVote) {
+                          try {
+                            await writeTx(() => approveZeta());
+                            await writeTx(() =>
+                              castVote({
+                                args: [proposal.args[0], 2],
+                                value: 0n,
+                              }),
+                            );
+                          } catch (e: any) {
+                            const message = getParsedError(e);
+                            notification.error(message);
+                          }
+                        } else {
+                          notification.error("Contract writer error. Try again.");
+                          return;
+                        }
+                      }}
+                    >
+                      Vote
+                    </button>
                   </div>
                   <div className="flex flex-col">
                     <p className="m-0">For Votes</p>
-                    <p className="m-0">{proposal.args[5].toString()}</p>
+                    <p className="m-0 self-center">{proposal.args[5].toString()}</p>
+                    <button
+                      className="btn btn-primary mt-2 btn-sm flex-1"
+                      onClick={async () => {
+                        if (approveZeta && castVote) {
+                          try {
+                            await writeTx(() => approveZeta());
+                            await writeTx(() =>
+                              castVote({
+                                args: [proposal.args[0], 1],
+                                value: 0n,
+                              }),
+                            );
+                          } catch (e: any) {
+                            const message = getParsedError(e);
+                            notification.error(message);
+                          }
+                        } else {
+                          notification.error("Contract writer error. Try again.");
+                          return;
+                        }
+                      }}
+                    >
+                      Vote
+                    </button>
                   </div>
                 </div>
-                <button className="btn btn-primary mt-2 btn-sm">Vote</button>
               </div>
             </li>
           ))}

@@ -51,6 +51,7 @@ export const useScaffoldContractWrite = <
 
         if (deployedContractsChainIds.includes(chainId.toString())) {
           const deployedContract =
+            // @ts-ignore TODO: fix this
             deployedContracts[chainId as keyof typeof deployedContracts][0].contracts[contractName];
           // @ts-ignore TODO: fix this
           setActualContract({ address: deployedContract.address, abi: deployedContract.abi });
@@ -59,6 +60,7 @@ export const useScaffoldContractWrite = <
       }
 
       const deployedContract =
+        // @ts-ignore TODO: fix this
         deployedContracts[uiChain.id as keyof typeof deployedContracts][0].contracts[contractName];
       // @ts-ignore TODO: fix this
       setActualContract({ address: deployedContract.address, abi: deployedContract.abi });

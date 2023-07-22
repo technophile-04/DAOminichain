@@ -1,9 +1,51 @@
-import Link from "next/link";
+import { useState } from "react";
 import type { NextPage } from "next";
-import { BugAntIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { parseEther } from "viem";
+import { useContractWrite } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
+import { AddressInput, getParsedError } from "~~/components/scaffold-eth";
+import deployedContracts from "~~/generated/deployedContracts";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
+
+const DEPLOYED_FOOTYDAOTOKEN_GOERLI = "0x66A70844A816066530eeC13B5C17C82d8df991D7";
+const AMOUNT = parseEther("3");
 
 const Home: NextPage = () => {
+  const [delegateAddress, setDelegateAddress] = useState("");
+  const writeTx = useTransactor();
+
+  const { writeAsync: approveZeta } = useContractWrite({
+    address: deployedContracts[5][0].contracts.ZetaToken.address,
+    abi: deployedContracts[5][0].contracts.ZetaToken.abi,
+    functionName: "approve",
+    args: [DEPLOYED_FOOTYDAOTOKEN_GOERLI, AMOUNT],
+    chainId: 5,
+  });
+
+  const { writeAsync: delegateFooty } = useContractWrite({
+    address: deployedContracts[5][0].contracts.FootyToken.address,
+    abi: deployedContracts[5][0].contracts.FootyToken.abi,
+    functionName: "delegate",
+    args: [delegateAddress],
+    value: 0n,
+    chainId: 5,
+  });
+
+  const handleDelegate = async () => {
+    if (approveZeta && delegateFooty) {
+      try {
+        await writeTx(() => approveZeta());
+        await writeTx(() => delegateFooty());
+      } catch (e: any) {
+        const message = getParsedError(e);
+        notification.error(message);
+      }
+    } else {
+      notification.error("Contract writer error. Try again.");
+      return;
+    }
+  };
   return (
     <>
       <MetaHeader />
@@ -23,40 +65,10 @@ const Home: NextPage = () => {
           </p>
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <SparklesIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Experiment with{" "}
-                <Link href="/example-ui" passHref className="link">
-                  Example UI
-                </Link>{" "}
-                to build your own UI.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
+        <AddressInput value={delegateAddress} onChange={newVal => setDelegateAddress(newVal)} />
+        <button className="btn btn-primary btn-md" onClick={handleDelegate}>
+          Delegate
+        </button>
       </div>
     </>
   );

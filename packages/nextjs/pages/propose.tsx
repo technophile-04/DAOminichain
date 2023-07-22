@@ -7,19 +7,21 @@ const Propose: NextPage = () => {
   const { writeAsync: proposeTxn } = useScaffoldContractWrite({
     contractName: "FootyDAO",
     functionName: "propose",
-    args: [["0x0000c9eC4042283e8139c74F4c64BcD1E0b9B54f"], [0n], ["0x"], "test proposal"],
+    // @ts-ignore TODO: fix this
+    args: [["0x0000c9eC4042283e8139c74F4c64BcD1E0b9B54f"], [0n], ["0x"], "This is test propose 1234"],
   });
 
   const [formState, setFormState] = useState({
-    proposeID: "",
-    title: "",
     description: "",
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle form submission here
-    await proposeTxn();
+    await proposeTxn({
+      // @ts-ignore TODO: fix this
+      args: [["0x0000c9eC4042283e8139c74F4c64BcD1E0b9B54f"], [0n], ["0x"], formState.description],
+    });
     console.log(formState);
   };
   return (
@@ -31,7 +33,7 @@ const Propose: NextPage = () => {
       <h1 className="font-bold text-3xl mb-3 text-center my-16">Create Proposal</h1>
       <div className="flex justify-center items-center mb-auto mx-6">
         <form className="w-full max-w-lg bg-base-100 p-8 rounded-3xl flex flex-col" onSubmit={handleSubmit}>
-          <div className="mb-4 space-y-2">
+          {/* <div className="mb-4 space-y-2">
             <label htmlFor="proposeID" className="font-medium my-0 break-words">
               Propose ID
             </label>
@@ -63,7 +65,7 @@ const Propose: NextPage = () => {
                 required
               />
             </div>
-          </div>
+          </div> */}
 
           <div className="mb-4 space-y-2">
             <label htmlFor="proposeID" className="font-medium my-0 break-words">
