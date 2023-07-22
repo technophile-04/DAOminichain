@@ -3,14 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
-import {
-  ArrowsRightLeftIcon,
-  Bars3Icon,
-  BugAntIcon,
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-  SparklesIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowsRightLeftIcon, Bars3Icon, BugAntIcon, ChevronDownIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
@@ -71,17 +64,17 @@ export const Header = () => {
         </NavLink>
       </li>
       <li>
-        <NavLink href="/example-ui">
+        <NavLink href="/propose">
           <SparklesIcon className="h-4 w-4" />
-          Example UI
+          Create Proposal
         </NavLink>
       </li>
-      <li>
-        <NavLink href="/blockexplorer">
-          <MagnifyingGlassIcon className="h-4 w-4" />
-          Block Explorer
-        </NavLink>
-      </li>
+      {/* <li> */}
+      {/*   <NavLink href="/blockexplorer"> */}
+      {/*     <MagnifyingGlassIcon className="h-4 w-4" /> */}
+      {/*     Block Explorer */}
+      {/*   </NavLink> */}
+      {/* </li> */}
     </>
   );
 
