@@ -8,7 +8,7 @@ import { MetaHeader } from "~~/components/MetaHeader";
 import { Spinner } from "~~/components/Spinner";
 import { Address, getParsedError } from "~~/components/scaffold-eth";
 import deployedContracts from "~~/generated/deployedContracts";
-import { useScaffoldContract, useScaffoldEventHistory, useTransactor } from "~~/hooks/scaffold-eth";
+import { useScaffoldEventHistory, useTransactor } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 const FootyDAOContract = deployedContracts[80001][0].contracts.FootyDAO;
