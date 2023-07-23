@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { IDKitWidget, ISuccessResult } from "@worldcoin/idkit";
 import type { NextPage } from "next";
 import { parseEther } from "viem";
 import { useContractWrite } from "wagmi";
@@ -14,6 +15,21 @@ const AMOUNT = parseEther("3");
 const Home: NextPage = () => {
   const [delegateAddress, setDelegateAddress] = useState("");
   const writeTx = useTransactor();
+  const [hideWorldCoin, setHideWorldCoin] = useState(false);
+  const handleProof = useCallback((result: ISuccessResult) => {
+    return new Promise<void>(resolve => {
+      console.log("The result after verification is : ", result);
+      setTimeout(() => {
+        resolve();
+      }, 3000);
+      // NOTE: Example of how to decline the verification request and show an error message to the user
+    });
+  }, []);
+
+  const onSuccess = (result: ISuccessResult) => {
+    setHideWorldCoin(true);
+    console.log(result);
+  };
 
   const { writeAsync: approveZeta } = useContractWrite({
     address: deployedContracts[5][0].contracts.ZetaToken.address,
@@ -50,6 +66,23 @@ const Home: NextPage = () => {
     <>
       <MetaHeader />
       <div className="flex items-center flex-col flex-grow pt-10">
+        {!hideWorldCoin && (
+          <div className="flex self-center">
+            <IDKitWidget
+              action="my_action"
+              signal="my_signal"
+              onSuccess={onSuccess}
+              handleVerify={handleProof}
+              app_id="app_staging_4f76c073620098cb451497609cc8cf9c"
+            >
+              {({ open }) => (
+                <button className="btn btn-primary" onClick={open}>
+                  Connect with world coin
+                </button>
+              )}
+            </IDKitWidget>
+          </div>
+        )}
         <div className="px-5">
           <h1 className="text-center mb-8">
             <span className="block text-2xl mb-2">Welcome to</span>
