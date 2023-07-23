@@ -35,7 +35,7 @@ export const useScaffoldEventHistory = <
   // const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo(contractName);
   const deployedContractData = deployedContracts[80001][0].contracts.FootyDAO;
   const deployedContractLoading = false;
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: 80001 });
 
   useEffect(() => {
     async function readEvents() {

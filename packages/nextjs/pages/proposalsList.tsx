@@ -11,6 +11,7 @@ import deployedContracts from "~~/generated/deployedContracts";
 import { useScaffoldContract, useScaffoldEventHistory, useTransactor } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
+const FootyDAOContract = deployedContracts[80001][0].contracts.FootyDAO;
 const AMOUNT = parseEther("3");
 
 const ProposalsList: NextPage = () => {
@@ -39,8 +40,6 @@ const ProposalsList: NextPage = () => {
     value: 0n,
   });
 
-  const { data: FootyDAOContract } = useScaffoldContract({ contractName: "FootyDAO" });
-
   useEffect(() => {
     (async () => {
       if (proposalCreatedEvents && FootyDAOContract) {
@@ -51,6 +50,7 @@ const ProposalsList: NextPage = () => {
               abi: FootyDAOContract.abi,
               functionName: "proposals",
               args: [proposal.args.proposalId],
+              chainId: 80001,
             });
             return { args: result, description: proposal.args.description };
           }),
