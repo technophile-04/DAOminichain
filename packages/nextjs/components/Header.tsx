@@ -114,6 +114,33 @@ export const Header = () => {
                 }}
               >
                 {navLinks}
+                <div className="dropdown dropdown-end md:hidden">
+                  <label tabIndex={0} className="btn btn-success btn-sm dropdown-toggle">
+                    <span>{uiChain.name}</span>
+                    <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
+                  </label>
+                  <ul tabIndex={0} className="dropdown-content menu p-2 mt-1 shadow-lg bg-base-100 rounded-box ">
+                    {enabledChains.map(chain => (
+                      <li key={chain.id}>
+                        <button
+                          className="menu-item"
+                          type="button"
+                          onClick={() => {
+                            setUiChain(chain);
+                            if (isConnected) {
+                              switchNetwork?.(chain.id);
+                            }
+                          }}
+                        >
+                          <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
+                          <span className="whitespace-nowrap">
+                            Switch to <span style={{ color: NETWORKS_EXTRA_DATA[chain.id].color }}>{chain.name}</span>
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </ul>
             )}
           </div>
@@ -130,12 +157,12 @@ export const Header = () => {
         </div>
         <div className="navbar-end flex-grow mr-4 space-x-4">
           {/*Network switch button*/}
-          <div className="dropdown dropdown-end">
+          <div className="dropdown dropdown-end hidden md:block">
             <label tabIndex={0} className="btn btn-success btn-sm dropdown-toggle">
               <span>{uiChain.name}</span>
               <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
             </label>
-            <ul tabIndex={0} className="dropdown-content menu p-2 mt-1 shadow-lg bg-base-100 rounded-box">
+            <ul tabIndex={0} className="dropdown-content menu p-2 mt-1 shadow-lg bg-base-100 rounded-box ">
               {enabledChains.map(chain => (
                 <li key={chain.id}>
                   <button
