@@ -66,23 +66,6 @@ const Home: NextPage = () => {
     <>
       <MetaHeader />
       <div className="flex items-center flex-col flex-grow pt-10">
-        {!hideWorldCoin && (
-          <div className="flex self-center">
-            <IDKitWidget
-              action="my_action"
-              signal="my_signal"
-              onSuccess={onSuccess}
-              handleVerify={handleProof}
-              app_id="app_staging_4f76c073620098cb451497609cc8cf9c"
-            >
-              {({ open }) => (
-                <button className="btn btn-primary" onClick={open}>
-                  Connect with world coin
-                </button>
-              )}
-            </IDKitWidget>
-          </div>
-        )}
         <div className="px-5">
           <h1 className="text-center mb-8">
             <span className="block text-2xl mb-2">Welcome to</span>
@@ -96,6 +79,23 @@ const Home: NextPage = () => {
           </button>
         </div>
       </div>
+      {!hideWorldCoin && (
+        <div className="flex self-center mt-8">
+          <IDKitWidget
+            action="my_action"
+            signal="my_signal"
+            onSuccess={onSuccess}
+            handleVerify={handleProof}
+            app_id="app_staging_4f76c073620098cb451497609cc8cf9c"
+          >
+            {({ open }) => (
+              <button className="btn btn-primary" onClick={open}>
+                Connect with world coin
+              </button>
+            )}
+          </IDKitWidget>
+        </div>
+      )}
     </>
   );
 };
