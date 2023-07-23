@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { readContract } from "@wagmi/core";
+import humanizeDuration from "humanize-duration";
 import type { NextPage } from "next";
-import { parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import { useContractWrite } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { Spinner } from "~~/components/Spinner";
@@ -54,6 +55,7 @@ const ProposalsList: NextPage = () => {
             return { args: result, description: proposal.args.description };
           }),
         );
+        console.log("DFSDFDFSfjllll", data);
         setAllParsedProposals(data);
       }
     })();
@@ -89,12 +91,15 @@ const ProposalsList: NextPage = () => {
                 <h3 className="text-xl font-bold">
                   <Address address={proposal.args[1]} />
                 </h3>
+                <p className="m-0 p-0">
+                  {`${humanizeDuration(Date.now() - parseInt(proposal.args[4].toString(), 10) * 1000)}`}{" "}
+                </p>
                 <p className="">{proposal.description}</p>
                 <div className="flex space-x-8">
                   {/* Show the endBlock */}
                   <div className="flex flex-col">
                     <p className="m-0">Abstain Votes</p>
-                    <p className="m-0 self-center">{proposal.args[7].toString()}</p>
+                    <p className="m-0 self-center">{formatEther(proposal.args[7])}</p>
                     <button
                       className="btn btn-primary mt-2 btn-sm"
                       onClick={async () => {
@@ -122,7 +127,7 @@ const ProposalsList: NextPage = () => {
                   </div>
                   <div className="flex flex-col">
                     <p className="m-0">Against Vote</p>
-                    <p className="m-0 self-center">{proposal.args[6].toString()}</p>
+                    <p className="m-0 self-center">{formatEther(proposal.args[6])}</p>
                     <button
                       className="btn btn-primary mt-2 btn-sm"
                       onClick={async () => {
@@ -150,7 +155,7 @@ const ProposalsList: NextPage = () => {
                   </div>
                   <div className="flex flex-col">
                     <p className="m-0">For Votes</p>
-                    <p className="m-0 self-center">{proposal.args[5].toString()}</p>
+                    <p className="m-0 self-center">{formatEther(proposal.args[5])}</p>
                     <button
                       className="btn btn-primary mt-2 btn-sm flex-1"
                       onClick={async () => {
